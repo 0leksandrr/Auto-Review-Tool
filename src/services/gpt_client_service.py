@@ -13,7 +13,7 @@ class OpenAIClient(BaseAPIClient):
 
     async def handle(self, prompt: str, **kwargs) -> str:
         response = await self.client.chat.completions.create(
-            model="gpt-4o",
+            model=settings.GPT_MODEL_NAME,
             messages=[
                 {"role": "system", "content": "You are a tech lead at a big tech company."},
                 {"role": "user", "content": prompt},
@@ -50,7 +50,7 @@ class CodeAnalyzer:
 
     @staticmethod
     def extract_rating(review_data: str) -> str:
-        match = re.search(r"(\d+)/10", review_data)
+        match = re.search(r"(\d+(\.\d+)?)/10", review_data)
         return match.group(1) if match else "Not available"
 
     @staticmethod

@@ -17,8 +17,10 @@ async def test_generate_review():
 
     mock_github_client = MagicMock(GitHubClient)
     mock_ai_client = MagicMock(OpenAIClient)
+    mock_redis_client = AsyncMock()
 
     mock_github_client.handle = AsyncMock(return_value=[{"name": "test_file.py", "content": "print('hello world')"}])
+
     mock_ai_client.handle = AsyncMock(return_value=(
         "Found files: test_file.py\n"
         "Downsides comments: Solid code\n"
@@ -26,7 +28,9 @@ async def test_generate_review():
         "**Conclusion: Solid code."
     ))
 
-    mediator = Mediator(github_client=mock_github_client, ai_client=mock_ai_client)
+    mock_redis_client.get = AsyncMock(return_value=None)
+
+    mediator = Mediator(github_client=mock_github_client, ai_client=mock_ai_client, redis_client=mock_redis_client)
 
     result = await mediator.generate_review(fake_github_url, fake_assignment_description, fake_candidate_level)
 

@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     OPENAI_URL: str = Field("https://models.inference.ai.azure.com", alias="OPENAI_URL", description="Base URL for OpenAI")
     GITHUB_URL: str = Field("https://api.github.com", alias="GITHUB_URL", description="Base URL for GitHub API")
     IGNORE_FILES: str = Field(..., alias="IGNORE_FILES", description="Comma-separated list of files to ignore")
+    GPT_MODEL_NAME: str = Field(..., alias="GPT_MODEL_NAME", description="The name of the GPT model to use")
 
     model_config = SettingsConfigDict(env_file='.env_EXAMPLE', extra='ignore')
 
