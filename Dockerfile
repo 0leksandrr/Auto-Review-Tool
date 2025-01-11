@@ -1,8 +1,6 @@
 FROM python:3.12-alpine
 
-ENV DJANGO_ENV=${DJANGO_ENV} \
-  # python:
-  PYTHONFAULTHANDLER=1 \
+ENV PYTHONFAULTHANDLER=1 \
   PYTHONUNBUFFERED=1 \
   PYTHONHASHSEED=random \
   # pip:
@@ -26,4 +24,5 @@ RUN poetry install --no-root
 
 COPY . /code
 
-CMD ["uvicorn", "--factory", "app.application.api.main:create_app", "--reload", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "src.api.v1.main:create_app", "--reload", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+
