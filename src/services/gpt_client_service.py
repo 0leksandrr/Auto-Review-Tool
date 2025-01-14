@@ -32,7 +32,7 @@ class CodeAnalyzer:
 
     def create_prompt(self, files: list[dict]) -> str:
         code = "\n".join([file["content"] for file in files if file.get("content")])
-        prompt_template = settings.PROMPT_TEMPLATE
+        prompt_template = settings.REVIEW_PROMPT_TEMPLATE
         return prompt_template.format(level=self.level, description=self.description, code=code)
 
     async def analyze(self, files: list[dict]) -> dict[str, str]:

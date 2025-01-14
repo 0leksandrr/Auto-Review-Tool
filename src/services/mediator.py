@@ -1,10 +1,18 @@
-from dataclasses import dataclass
 import json
+from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import Iterable
+
 import redis.asyncio as aioredis
 
+from src.services.commands.base import CT, BaseCommand
 from src.services.github_client_service import GitHubClient
 from src.services.gpt_client_service import OpenAIClient, CodeAnalyzer
 from src.utils.logging import logger
+
+
+class CommandHandler:
+    pass
 
 
 @dataclass
@@ -12,6 +20,20 @@ class Mediator:
     github_client: GitHubClient
     ai_client: OpenAIClient
     redis_client: aioredis.Redis
+
+    commands_map: dict[CT, CommandHandler] = field(
+        default_factory=lambda: defaultdict(list),
+        kw_only=True,
+    )
+
+    def register_command(self, command: CT, command_handlers: Iterable):
+        self.commands_map[command].extend(command_handlers)
+
+    async def handle_command(self, command: BaseCommand) -> Iterable:
+        command_type = command.__class__
+        handlers = self.commands_map[command_type]
+
+        return [await handler.handle(command) for handler in handlers]
 
     async def generate_review(
             self,

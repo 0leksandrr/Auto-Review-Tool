@@ -14,6 +14,8 @@ openai = "^1.59.6"
 punq = "^0.7.0"
 setuptools = "^75.8.0"
 redis = {extras = ["async"], version = "^5.2.1"}
+aio-pika = "^9.5.4"
+orjson = "^3.10.14"
 
 
 [tool.poetry.group.dev.dependencies]
