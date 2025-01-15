@@ -74,7 +74,8 @@ class RabbitMQMessageBroker(BaseMessageBroker):
             await channel.declare_queue(routing_key, durable=True)
 
             for message in messages:
+
                 await channel.default_exchange.publish(
-                    Message(body=str(message).encode()),
+                    Message(convert_event_to_broker_message(message)),
                     routing_key=routing_key,
                 )
