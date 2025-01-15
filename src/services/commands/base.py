@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import (
     Any,
     Generic,
-    TypeVar,
+    TypeVar, Optional,
 )
 
 from openai import AsyncOpenAI
@@ -23,6 +23,8 @@ CR = TypeVar('CR', bound=Any)
 
 @dataclass(frozen=True)
 class BaseCommandHandler(ABC, Generic[CT, CR]):
+    from src.services.mediator import Mediator
+    _mediator: Optional[Mediator]
 
     @abstractmethod
     async def handle(self, command: CT) -> CR:

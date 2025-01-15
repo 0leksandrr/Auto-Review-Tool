@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     REDIS_URL: str = Field(..., alias="REDIS_URL", description="URL for the Redis instance")
     OPENAI_URL: str = Field("https://models.inference.ai.azure.com", alias="OPENAI_URL", description="Base URL for OpenAI")
     GITHUB_URL: str = Field("https://api.github.com", alias="GITHUB_URL", description="Base URL for GitHub API")
+
+    RABBITMQ_URL: str = Field(..., alias="RABBITMQ_URL", description="RabbitMQ URL")
+    BROKER_TOPIC: str = Field(..., alias="BROKER_TOPIC", description="Broker topic")
+
     IGNORE_FILES: str = Field(..., alias="IGNORE_FILES", description="Comma-separated list of files to ignore")
     GPT_MODEL_NAME: str = Field(..., alias="GPT_MODEL_NAME", description="The name of the GPT model to use")
 

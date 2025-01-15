@@ -8,13 +8,13 @@ from dataclasses import dataclass
 @dataclass
 class BaseMessageBroker(ABC):
     @abstractmethod
-    async def start(self):
+    async def connect(self):
         ...
 
     @abstractmethod
-    async def close(self):
+    async def disconnect(self):
         ...
 
     @abstractmethod
-    async def send_message(self, key: str, topic: str, value: bytes):
+    async def send_messages(self, messages: list | dict, routing_key: str):
         ...

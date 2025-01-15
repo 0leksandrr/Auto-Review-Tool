@@ -1,12 +1,14 @@
-from httpx import AsyncClient
+import redis.asyncio as aioredis
 from openai import AsyncOpenAI
 from punq import Container, Scope
-import redis.asyncio as aioredis
 from redis.asyncio import Redis
 
+from src.infrastructure.message_brokers.base import BaseMessageBroker
+from src.infrastructure.message_brokers.rabbitmq import RabbitMQMessageBroker
 from src.services.commands.assistant import AssistCommandHandler, AssistCommand
+from src.services.events.assistant import RequestToAssistant, RequestToAssistantHandler
 from src.services.github_client_service import GitHubClient
-from src.services.gpt_client_service import OpenAIClient, CodeAnalyzer
+from src.services.gpt_client_service import OpenAIClient
 from src.services.mediator import Mediator
 from src.utils.config import settings
 
@@ -23,6 +25,10 @@ def init_container() -> Container:
         ),
         scope=Scope.singleton
     )
+
+    container.register(BaseMessageBroker, lambda: RabbitMQMessageBroker(
+        connection_url=settings.RABBITMQ_URL
+    ), scope=Scope.singleton)
 
     container.register(AsyncOpenAI, lambda: AsyncOpenAI(
         base_url=settings.OPENAI_URL,
@@ -57,11 +63,22 @@ def init_container() -> Container:
 
         create_assistant_handler = AssistCommandHandler(
             client=container.resolve(AsyncOpenAI),
+            _mediator=mediator
         )
 
         mediator.register_command(
             AssistCommand,
             [create_assistant_handler,]
+        )
+
+        create_assistant_event = RequestToAssistantHandler(
+            message_broker=container.resolve(BaseMessageBroker),
+            broker_topic=settings.BROKER_TOPIC,
+        )
+
+        mediator.register_event(
+            RequestToAssistant,
+            [create_assistant_event,]
         )
 
         return mediator

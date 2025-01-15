@@ -48,5 +48,4 @@ class GitHubClient(BaseAPIClient):
     async def handle(self, repo_url: str) -> list[dict]:
         repo_path = repo_url.replace("https://github.com/", "").strip()
         api_url = f"https://api.github.com/repos/{repo_path}/contents/"
-
         return await self.process_directory(api_url)

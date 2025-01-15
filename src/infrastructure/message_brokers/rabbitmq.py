@@ -1,34 +1,80 @@
-import orjson
-import aio_pika
 from dataclasses import dataclass
+from typing import Optional
+
+import aio_pika
+from aio_pika import connect_robust, Message
+from aio_pika.abc import AbstractRobustConnection, AbstractRobustChannel
 
 from src.infrastructure.message_brokers.base import BaseMessageBroker
+from src.infrastructure.message_brokers.converters import convert_event_to_broker_message
 from src.utils.logging import logger
 
 
 @dataclass
 class RabbitMQMessageBroker(BaseMessageBroker):
     connection_url: str
-    connection: aio_pika.RobustConnection | None = None
-    channel: aio_pika.abc.AbstractChannel | None = None
+    connection: AbstractRobustConnection | None = None
 
-    async def start(self):
-        self.connection = await aio_pika.connect_robust(self.connection_url)
-        self.channel = await self.connection.channel()
-        logger.info("RabbitMQ connection and channel established.")
+    def status(self) -> bool:
+        """
+            Checks if connection established
 
-    async def close(self):
-        if self.channel:
-            await self.channel.close()
-        if self.connection:
+            :return: True if connection established
+        """
+        if self.connection.is_closed:
+            return False
+        return True
+
+    async def _clear(self) -> None:
+        if not self.connection.is_closed:
             await self.connection.close()
-        logger.info("RabbitMQ connection and channel closed.")
 
-    async def send_message(self, key: str, topic: str, value: bytes):
-        if not self.channel:
-            raise RuntimeError("RabbitMQ channel is not initialized. Call start() first.")
+        self.connection = None
 
-        exchange = await self.channel.declare_exchange(topic, aio_pika.ExchangeType.DIRECT)
-        message = aio_pika.Message(body=value)
-        await exchange.publish(message, routing_key=key)
-        logger.info(f"Message sent to exchange '{topic}' with routing key '{key}'.")
+    async def connect(self) -> None:
+        """
+        Establish connection with the RabbitMQ
+
+        :return: None
+        """
+        try:
+            self.connection = await connect_robust(self.connection_url)
+        except Exception as e:
+            await self._clear()
+            logger.error(f"Error connecting to RabbitMQ: {str(e)}")
+
+    async def disconnect(self) -> None:
+        """
+        Disconnect and clear connections from RabbitMQ
+
+        :return: None
+        """
+        await self._clear()
+
+    async def send_messages(
+            self,
+            messages: list | dict,
+            routing_key: str = "test"
+    ) -> None:
+        """
+            Public message or messages to the RabbitMQ queue.
+
+            :param messages: list or dict with messages objects.
+            :param routing_key: Routing key of RabbitMQ, not required. Tip: the same as in the consumer.
+        """
+        if self.connection is None or self.connection.is_closed:
+            await self.connect()
+
+        if isinstance(messages, dict):
+            messages = [messages]
+
+        async with self.connection:
+
+            channel = await self.connection.channel()
+            await channel.declare_queue(routing_key, durable=True)
+
+            for message in messages:
+                await channel.default_exchange.publish(
+                    Message(body=str(message).encode()),
+                    routing_key=routing_key,
+                )

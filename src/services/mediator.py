@@ -6,6 +6,7 @@ from typing import Iterable
 import redis.asyncio as aioredis
 
 from src.services.commands.base import CT, BaseCommand
+from src.services.events.base import EventHandler, ET
 from src.services.github_client_service import GitHubClient
 from src.services.gpt_client_service import OpenAIClient, CodeAnalyzer
 from src.utils.logging import logger
@@ -26,14 +27,28 @@ class Mediator:
         kw_only=True,
     )
 
+    events_map: dict[ET, EventHandler] = field(
+        default_factory=lambda: defaultdict(list),
+        kw_only=True,
+    )
+
     def register_command(self, command: CT, command_handlers: Iterable):
         self.commands_map[command].extend(command_handlers)
+
+    def register_event(self, event: ET, event_handlers: Iterable):
+        self.events_map[event].extend(event_handlers)
 
     async def handle_command(self, command: BaseCommand) -> Iterable:
         command_type = command.__class__
         handlers = self.commands_map[command_type]
 
         return [await handler.handle(command) for handler in handlers]
+
+    async def handle_event(self, event: ET) -> Iterable:
+        event_type = event.__class__
+        handlers = self.events_map[event_type]
+
+        return [await handler.handle(event) for handler in handlers]
 
     async def generate_review(
             self,
