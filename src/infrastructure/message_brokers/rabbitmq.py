@@ -21,12 +21,12 @@ class RabbitMQMessageBroker(BaseMessageBroker):
 
             :return: True if connection established
         """
-        if self.connection.is_closed:
+        if self.connection is None:
             return False
         return True
 
     async def _clear(self) -> None:
-        if not self.connection.is_closed:
+        if self.connection:
             await self.connection.close()
 
         self.connection = None
@@ -62,7 +62,7 @@ class RabbitMQMessageBroker(BaseMessageBroker):
             :param messages: list or dict with messages objects.
             :param routing_key: Routing key of RabbitMQ, not required. Tip: the same as in the consumer.
         """
-        if self.connection is None or self.connection.is_closed:
+        if self.connection is None:
             await self.connect()
 
         if isinstance(messages, dict):

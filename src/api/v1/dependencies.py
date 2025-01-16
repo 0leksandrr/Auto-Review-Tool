@@ -3,6 +3,8 @@ from openai import AsyncOpenAI
 from punq import Container, Scope
 from redis.asyncio import Redis
 
+from src.infrastructure.cache.base import BaseCache
+from src.infrastructure.cache.redis import RedisCache
 from src.infrastructure.message_brokers.base import BaseMessageBroker
 from src.infrastructure.message_brokers.rabbitmq import RabbitMQMessageBroker
 from src.services.commands.assistant import AssistCommandHandler, AssistCommand
@@ -25,6 +27,10 @@ def init_container() -> Container:
         ),
         scope=Scope.singleton
     )
+
+    container.register(BaseCache, lambda: RedisCache(
+        redis_client=container.resolve(Redis),
+    ))
 
     container.register(BaseMessageBroker, lambda: RabbitMQMessageBroker(
         connection_url=settings.RABBITMQ_URL
@@ -63,6 +69,7 @@ def init_container() -> Container:
 
         create_assistant_handler = AssistCommandHandler(
             client=container.resolve(AsyncOpenAI),
+            cache=container.resolve(BaseCache),
             _mediator=mediator
         )
 
