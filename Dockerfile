@@ -24,5 +24,5 @@ RUN poetry install --no-root
 
 COPY . /code
 
-CMD ["uvicorn", "src.api.v1.main:create_app", "--reload", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
+CMD ["uvicorn", "src.api.v1.main:create_app", "--reload", "--host", "0.0.0.0", "--port", "9000", "--log-level", "info"]
 
