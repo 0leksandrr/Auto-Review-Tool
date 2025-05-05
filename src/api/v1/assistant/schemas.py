@@ -14,7 +14,13 @@ class AssistantSchemaRequest(BaseModel):
 
 
 class AssistantSchemaResponse(BaseModel):
-    description: str = Field(..., description="The customer's request description.")
-    links: List[HttpUrl] = Field(..., description="The list of product links.")
+    links: List[str] = Field(..., description="The list of product links.")
     timestamp: datetime = Field(..., description="The time when the response was created.")
 
+    @classmethod
+    def create(cls, links: List[str] = None) -> 'AssistantSchemaResponse':
+        if links is None:
+            links = []
+
+        valid_links = [str(url) for url in links[0]]
+        return cls(links=valid_links, timestamp=datetime.now())

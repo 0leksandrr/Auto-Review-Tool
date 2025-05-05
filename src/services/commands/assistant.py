@@ -12,6 +12,7 @@ from src.utils.config import settings
 
 
 URL_PATTERN = r'https?://[^\s]+'
+NUMBER_PATTERN = r'/(\d{2,3})/\)$'
 
 
 @dataclass(frozen=True)
@@ -27,11 +28,11 @@ class AssistCommandHandler(BaseCommandHandler):
 
     async def handle(self, command: AssistCommand) -> list:
         cache_key = f"assist_{command.description}_{command.links}"
-        cached_review = await self.cache.get(cache_key)
+        cached_review = await self.cache.lrange(cache_key, 0, -1)
 
         if cached_review:
-            urls = re.findall(URL_PATTERN, cached_review)
-            return urls
+            numbers = list(map(int, cached_review))
+            return numbers
 
         prompt_template = settings.ASSIST_PROMPT_TEMPLATE
         prompt_template = prompt_template.format(links=command.links, description=command.description)
@@ -43,7 +44,6 @@ class AssistCommandHandler(BaseCommandHandler):
             max_tokens=1000,
         )
 
-        await self.cache.set(cache_key, result, 600)
         await self._mediator.handle_event(RequestToAssistant(
             type="email",
             recipient="example@gmail.com",
@@ -57,4 +57,15 @@ class AssistCommandHandler(BaseCommandHandler):
         ))
 
         urls = re.findall(URL_PATTERN, result)
-        return urls
+        numbers_from_urls = []
+
+        for url in urls:
+            match = re.search(NUMBER_PATTERN, url)
+            if match:
+                numbers_from_urls.append(match.group(1))
+
+        if numbers_from_urls:
+            await self.cache.lpush(cache_key, *map(str, numbers_from_urls))
+            await self.cache.expire(cache_key, 600)
+
+        return numbers_from_urls

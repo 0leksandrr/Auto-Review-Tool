@@ -6,7 +6,7 @@ from src.api.v1.reviews.schemas import ReviewResponseSchema, ReviewRequestSchema
 from src.api.v1.schemas import ErrorSchema
 from src.services.mediator import Mediator
 from src.utils.exceptions import ApplicationException
-from src.utils.logging import logger
+from src.utils.logger import logger
 
 router = APIRouter(tags=["Review"])
 

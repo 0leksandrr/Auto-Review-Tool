@@ -9,7 +9,7 @@ from src.services.commands.base import CT, BaseCommand
 from src.services.events.base import EventHandler, ET
 from src.services.github_client_service import GitHubClient
 from src.services.gpt_client_service import OpenAIClient, CodeAnalyzer
-from src.utils.logging import logger
+from src.utils.logger import logger
 
 
 class CommandHandler:

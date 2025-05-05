@@ -1,0 +1,10 @@
+# Ignore compiled Python files
+*.pyc
+**/__pycache__/
+
+# Ignore virtual environments
+**/.venv
+
+# Ignore additional directories
+**/photos_for_readme/
+**/idea/

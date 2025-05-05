@@ -7,7 +7,7 @@ from src.api.v1.schemas import ErrorSchema
 from src.services.commands.assistant import AssistCommand
 from src.services.mediator import Mediator
 from src.utils.exceptions import ApplicationException
-from src.utils.logging import logger
+from src.utils.logger import logger
 
 router = APIRouter(tags=["AI Assistant"])
 
@@ -25,7 +25,7 @@ router = APIRouter(tags=["AI Assistant"])
 async def assist(
         schema: AssistantSchemaRequest,
         container: Container = Depends(init_container),
-) -> list:
+) -> AssistantSchemaResponse:
     mediator = container.resolve(Mediator) 
 
     try:
@@ -38,4 +38,4 @@ async def assist(
         logger.error(f"Error : {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
-    return result
+    return AssistantSchemaResponse.create(result)

@@ -6,7 +6,7 @@ from src.api.v1.lifespan import init_message_broker, close_message_broker
 from src.api.v1.reviews.handlers import router as router_review
 from src.api.v1.assistant.handlers import router as router_assistant
 from src.utils.config import settings
-from src.utils.logging import logger
+from src.utils.logger import logger
 
 
 @asynccontextmanager

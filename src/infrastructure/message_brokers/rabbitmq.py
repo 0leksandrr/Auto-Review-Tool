@@ -7,7 +7,7 @@ from aio_pika.abc import AbstractRobustConnection, AbstractRobustChannel
 
 from src.infrastructure.message_brokers.base import BaseMessageBroker
 from src.infrastructure.message_brokers.converters import convert_event_to_broker_message
-from src.utils.logging import logger
+from src.utils.logger import logger
 
 
 @dataclass
